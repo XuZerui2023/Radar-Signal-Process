@@ -1,4 +1,5 @@
-% 本函数主要用于跨帧读取原始iq数据和帧头信息，并画信号幅值图
+% main_plot_amplitude_and_framehead_information.m 
+% 本函数主要用于从原始bin文件中跨帧读取原始iq数据和帧头信息，并画信号幅值图
 % 本函数绘图功能：
 %   1. 信号抽选任一prt多帧的信号幅度图（i，q，复数信号）
 %   2. 信号原始伺服角和修正后伺服角示意图
@@ -6,6 +7,9 @@
 % 本函数数据读取保存功能：
 %   1. 可以保存多帧帧头信息为一个元胞数组
 %
+% 修改记录:
+% date       by      version    modify
+% 25/07/05   XZR      v1.0      抽选任一prt多帧的信号幅度图（i，q，复数信号）
 
 clc,clear;
 frame_range = 0:151;
@@ -27,7 +31,7 @@ else
     disp(['已选择文件路径: ', fullFile]);
 end
 raw_data_path = fullfile(base_path, num2str(n_exp), '2025年05月22日17时10分05秒'); % 原始二进制bin文件路径
-iq_data_path = fullfile(base_path, num2str(n_exp), '\raw_iq_data');           % 保存iq_data文件路径
+iq_data_path = fullfile(base_path, num2str(n_exp), '\raw_iq_data');                % 保存iq_data文件路径
 
 %%  雷达系统参数
 % 将所有参数封装在config结构体中，方便传递
@@ -118,7 +122,8 @@ reshaped_prt_frame_abs_prt_select = squeeze(prt_frame_abs_prt_select);
 [rows, cols] = size(reshaped_prt_frame_abs_prt_select);
 data_to_plot = reshaped_prt_frame_abs_prt_select';  % plot函数按列成线
 
-if showaplitudeperframe
+% 画原始iq信号幅度图
+
 % 创建绘图
 figure(1); % 创建一个新的图窗窗口
 % 将每一行绘制成单独的线
@@ -130,9 +135,20 @@ legend;
 plot_title = sprintf('通道%d，prt维数%d 下，%d 帧幅值随采样距离的变化', channel_num, prt_select, rows')
 title(plot_title);
 grid on;
-end
 
-%% 画连续帧伺服角
+
+% 画脉压后iq信号幅度图
+
+
+
+
+
+
+
+
+
+
+% 画连续帧伺服角
 
 plot_servo_angle1 = plot_servo_angle * 0.01;
 plot_servo_angle2 = double(plot_servo_angle1) - 307.0 + 35;
@@ -144,14 +160,14 @@ for i = 1: length(frame_range)
     end
 end
 
-figure(2)
+figure(3)
 plot(plot_frame_no, plot_servo_angle)
 title1 = sprintf('%d 帧原始伺服角示意图', length(frame_range));
 title(title1);
 xlabel('帧数');
 ylabel('伺服角度');
 
-figure(3)
+figure(4)
 north_angle = 307;
 fix_angle = 35;
 correct_angle = fun_correct_servo_angle(plot_servo_angle,north_angle,fix_angle); % 调用伺服角修正子函数修正伺服角

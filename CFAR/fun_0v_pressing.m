@@ -10,15 +10,26 @@
 % 输出参数:
 %   MTD - (prtNum x point_prt double) 经过零速压制处理后的距离-多普勒矩阵。
 
-function MTD = fun_0v_pressing(MTD) % 无噪回波幅度控制
-% 1. 获取输入矩阵的维度
-[prtNum,point_prt] = size(MTD);
+function MTD = fun_0v_pressing(MTD, config) % 无噪回波幅度控制
 
-% 2. 定位零速通道
-zero_v_pos = round(prtNum/2);
-% MTD(zero_v_pos-round(prtNum/150):zero_v_pos+round(prtNum/150),:)=mean(mean(abs(MTD)));
+% 1. 获取输入矩阵的维度和系统参数
+[prtNum, point_prt] = size(MTD); 
+velocity_resolution = config.cfar.deltaV;   % 速度分辨率大小，也是一个速度参考单元的大小
+suppress_velocity_ms = config.cfar.MTD_V;   % 【可调参数】定义要抑制的速度范围，这里主控函数中设置为 -3m/s 到 +3m/s
 
-% 3. 执行零速压制
-MTD(zero_v_pos-round(prtNum/150) : zero_v_pos+round(prtNum/150),:) = 0;
+% 2. 计算需要抑制的速度单元数量
+notch_width_bins = ceil(suppress_velocity_ms / velocity_resolution);
+% fprintf('  > 速度分辨率: %.3f m/s, 抑制凹口宽度: %d 单元.\n', velocity_resolution, notch_width_bins);
+
+% 3. 定位零速通道
+zero_v_pos = round(prtNum/2) + 1;
+
+% 4. 定义抑制范围，并进行边界检查
+start_bin = max(1, zero_v_pos - notch_width_bins);
+end_bin = min(prtNum, zero_v_pos + notch_width_bins);
+suppress_range = start_bin:end_bin;
+
+% 5. 执行零速压制
+MTD(suppress_range, :) = 0;    % 相当于164速度单元到168速度单元
 
 end

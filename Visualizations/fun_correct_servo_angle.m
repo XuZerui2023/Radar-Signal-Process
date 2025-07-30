@@ -32,9 +32,4 @@ while any(corrected_angle_deg < -180)
     corrected_angle_deg(corrected_angle_deg < -180) = corrected_angle_deg(corrected_angle_deg < -180) + 360;
 end
 
-% --- 更高效的矢量化写法 (替代上面的while循环) ---
-% corrected_angle_deg = mod(corrected_angle_deg + 180, 360) - 180;
-% 这行代码用数学方法一次性将所有角度都归一化到[-180, 180)区间，效率更高。
-% 您可以注释掉上面的while循环，使用这一行来代替。
-
 end

@@ -50,7 +50,7 @@ ax1 = subplot(2, 2, 1, polaraxes);
 polarscatter(ax1, deg2rad(corrected_angles_deg), all_ranges_m, 20, all_velocities_ms, 'filled', 'MarkerFaceAlpha', 0.6);
 ax1.ThetaZeroLocation = 'top';
 ax1.ThetaDir = 'clockwise';
-ax1.ThetaLim = [-180 180];
+ax1.ThetaLim = [0 360];
 % ax1.RLim = [0 max(range_to_plot)];
 title(ax1, '累积目标位置距离-方位图 (颜色代表速度)');
 c1 = colorbar(ax1);

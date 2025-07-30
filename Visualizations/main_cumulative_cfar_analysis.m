@@ -1,3 +1,4 @@
+% 已弃用，被 main_visualize_final_results_v1.m 取代
 % main_cumulative_cfar_analysis.m
 % 该函数用于画累积cfar检测图，将检测点都画到一张图上
 % 修改记录

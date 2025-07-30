@@ -1,5 +1,5 @@
-%% FrameDataRead_xzr.m 功能：从二进制bin文件中读取回波信号数据中一帧的数据
-%  此函数现在通过调用 read_continuous_file_stream.m 从连续文件流中读取数据。
+%% 功能：从二进制bin文件中读取回波信号数据中一帧的数据, 有角码
+%   此函数现在通过调用 read_continuous_file_stream.m 从连续文件流中读取数据。
 % 输入：
 %     orgDataFilePath：基带原始数据文件夹位置（传递给 read_continuous_file_stream）。
 %     DBF_coeffs_data_C：加权DBF参数，用于DDC信号中。
@@ -8,7 +8,6 @@
 %
 % 输出：
 %     sig_data_DBF_allprts: (complex 3D matrix) DBF处理后的信号数据。
-%     raw_iq_16ch_allprts:  (complex 3D matrix) 原始的16通道I/Q数据。
 %     frame_headers:        (struct array) 包含该帧所有PRT帧头信息的结构体数组。
 %     servo_angle: 一帧所有PRT的伺服方位角。
 %     frameCompleted:       (logical) 帧是否完整读取的标志。
@@ -18,10 +17,9 @@
 % date       by      version   modify
 % 25/06/09   XZR      v1.0    调用下层函数实现跨文件处理
 % 25/07/03   XZR      v2.0    添加保存帧头信息并能被外部函数提取的结构体
-% 25/07/18  XZR      v2.1     增加原始的16通道I/Q数据输出
 % 未来改进：
 
-function [sig_data_DBF_allprts, raw_iq_16ch_allprts, servo_angle, frame_headers, frameCompleted, is_global_stream_end] = FrameDataRead_xzr(orgDataFilePath, DBF_coeffs_data_C, Sig_Config, frameRInd)
+function [sig_data_DBF_allprts, servo_angle, frame_headers, frameCompleted, is_global_stream_end] = FrameDataRead_xzr(orgDataFilePath, DBF_coeffs_data_C, Sig_Config, frameRInd)
 
 % 初始化参数
     % 持久化变量，用于在函数调用之间保持状态（仅用于帧内PRT计数和帧切换逻辑）
@@ -43,12 +41,11 @@ function [sig_data_DBF_allprts, raw_iq_16ch_allprts, servo_angle, frame_headers,
     bytesFrameRealtime = Sig_Config.bytesFrameRealtime;     % 实时参数的字节数
 
 
-    % 初始化输出, 预分配内存空间
-    sig_data_DBF_allprts = complex(zeros(prtNum, point_PRT, beam_num));   % 初始化多波束一帧（所有PRT）的信号数据矩阵
-    raw_iq_16ch_allprts = complex(zeros(prtNum, point_PRT, channel_num)); % 初始化原始物理通道一帧（所有PRT）的信号数据矩阵
-    servo_angle = zeros(1,prtNum,'double');                               % 初始化伺服方位角序列向量
-    frameCompleted = false;                                               % 默认帧未完成
-    is_global_stream_end = false;                                         % 默认数据流未结束
+    % 初始化输出
+    sig_data_DBF_allprts = complex(zeros(prtNum, point_PRT, beam_num)); % 初始化多波束一帧（所有PRT）的信号数据矩阵
+    servo_angle = zeros(1,prtNum,'double');                             % 初始化伺服方位角序列向量
+    frameCompleted = false;                                             % 默认帧未完成
+    is_global_stream_end = false;                                       % 默认数据流未结束
 
     % 初始化用于存储帧头信息的结构体数组
     % 定义一个模板，包含所有需要保存的帧头字段
@@ -160,9 +157,7 @@ function [sig_data_DBF_allprts, raw_iq_16ch_allprts, servo_angle, frame_headers,
         end
 
     % 5. 解析信号数据，计算信号相位叠加所成的波束
-        current_sig_data_DBF = complex(zeros(point_PRT, beam_num));        % 初始化当前PRT的DBF数据
-        sig_data_C_this_prt = complex(zeros(point_PRT, channel_num));      % 定义一个临时变量来存储当前PRT的16通道数据
-        
+        current_sig_data_DBF = complex(zeros(point_PRT, beam_num)); % 初始化当前PRT的DBF数据
         switch data_type
             case 0 % ADC数据
                 sig_data = pulse_data_parsed(1:pulse_data_num*channel_num);              % 去掉可能的块尾部补零数据
@@ -178,10 +173,6 @@ function [sig_data_DBF_allprts, raw_iq_16ch_allprts, servo_angle, frame_headers,
                 sig_data_Q = sig_data(:, 2:2:end);                                       % 分离IQ分量，提取所有行的偶数列（代表所有通道的Q分量）
                 sig_data_C = sig_data_I + sig_data_Q * cj;                               % 转换为复数矩阵，每一列代表一个通道的复数基带信号 (I + jQ)
 
-                % 1. 在进行DBF之前，先将这份最原始的16通道数据保存下来
-                sig_data_C_this_prt = sig_data_C;
-                
-                % 2. 继续进行DBF处理，生成13波束数据
                 current_sig_data_DBF = sig_data_C * DBF_coeffs_data_C.';                 % DBF系数加权后信号数据 = 原复信号(3404*16) * DBF系数矩阵(16*13)（非共轭转置），DBF权重系数是否已经取过共轭？
                 %sig_data_DBF_I = real(sig_data_DBF);                                    % DBF系数加权后信号数据实部（大小为：pulse_data_num * beam_num）
                 %sig_data_DBF_Q = imag(sig_data_DBF);                                    % DBF系数加权后信号数据虚部（大小为：pulse_data_num * beam_num）
@@ -204,11 +195,6 @@ function [sig_data_DBF_allprts, raw_iq_16ch_allprts, servo_angle, frame_headers,
 
         % 将当前PRT的数据存入总的帧数据矩阵
         current_prt = current_prt + 1;                                     % current_prt 初始值为0，迭代下一个prt
-        
-        % 将当前PRT的16通道原始数据存入新的输出矩阵
-        raw_iq_16ch_allprts(current_prt, :, :) = sig_data_C_this_prt;
-        
-        % 保存DBF处理后的13波束数据
         sig_data_DBF_allprts(current_prt, :, :) = current_sig_data_DBF;    % 转置为 (pulse_data_num x beam_num) % 三维数组存储一帧信号中所有PRT的13波束的所有采样点信号数据
         servo_angle(current_prt) = current_servo_angle;                    % 保存每帧信号所有prt的伺服方位角
 

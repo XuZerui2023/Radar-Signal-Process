@@ -1,4 +1,4 @@
-function [mtd_results, angles_wins] = process_stage2_mtd(iq_data_now, iq_data_next, angle1, angle2, config)
+function [mtd_results, angles_wins, pc_results] = process_stage2_mtd(iq_data_now, iq_data_next, angle1, angle2, config)
 % PROCESS_STAGE2_MTD - 对输入的I/Q数据执行MTD处理
 %
 % 本函数是原 main_produce_dataset_win_xzr_v2.m 脚本的功能化改造版本。
@@ -11,12 +11,14 @@ function [mtd_results, angles_wins] = process_stage2_mtd(iq_data_now, iq_data_ne
 %   config       - (struct) 包含所有MTD处理参数的配置结构体。
 %
 % 输出参数:
-%   mtd_results  - (cell) MTD处理结果。每个单元格包含一个波束的所有切片结果。
+%   mtd_results  - (cell) MTD处理结果。
+%   angles_wins  - (matrix) 窗口化的角度信息。
+%   pc_results   - (cell) 脉冲压缩处理结果。
 %
 %  修改记录
 %  date       by      version   modify
-%  25/06/26   XZR      v1.0      创建
-
+%  25/06/26   XZR      v1.0     创建
+%  25/07/18   XZR      V1.1     增加脉冲压缩处理结果输出
 
 %% 1. 从config结构体中获取参数
 beam_num = config.mtd.beam_num;
@@ -42,7 +44,7 @@ servo_angle_win = [echo_now_servo_angle, echo_next_servo_angle];
 
 %% 3. 对所有波束和切片进行MTD处理
 mtd_results = cell(beam_num, 1); % 初始化用于保存最终结果的Cell数组
-
+pc_results = cell(beam_num, 1);  % 初始化脉冲压缩结果的存储
 % --- 波束循环 ---
 for b = 1:beam_num
     current_beam_echo_win = echo_win_beams{b};
@@ -50,7 +52,8 @@ for b = 1:beam_num
     prts_per_slice = total_prts / 2;
     
     MTD_data_for_one_beam = []; % 初始化临时变量
-
+    PC_data_for_one_beam = []; % 
+    
     % --- 切片循环 ---
     for i = 0:(win_size - 1)
         start_row = round(i * prts_per_slice / win_size) + 1;
@@ -59,14 +62,15 @@ for b = 1:beam_num
 
         echo_segment = current_beam_echo_win(start_row:end_row, :);
         
-        % --- 调用核心MTD处理链函数 ---
-        % 注意：这里 fun_MTD_produce 也需要被相应修改，以接收params结构体
-        MTD_result = fun_MTD_produce(echo_segment, params_for_produce);
+        % --- 调用核心MTD处理链函数，并接收两个返回值 ---
+        [MTD_result_slice, PC_result_slice] = fun_MTD_produce(echo_segment, config);
         
-        MTD_data_for_one_beam(i+1, :, :) = MTD_result;
+        MTD_data_for_one_beam(i+1, :, :) = MTD_result_slice;
+        PC_data_for_one_beam(i+1, :, :) = PC_result_slice; 
     end
     
     mtd_results{b} = MTD_data_for_one_beam;
+    pc_results{b} = PC_data_for_one_beam; 
 end
 
 %% 4. 角度信息拼接

@@ -1,4 +1,6 @@
-% main_get_iq_data.m 该函数已经弃用
+% main_get_iq_data.m 
+% 该函数已经弃用，main_integrated_processing.m 和main_plot_amplitude_and_framehead_information.m 都有保存iq数据的功能
+
 % 此函数用于在 main_plot_overflow_ppi_v1.m 文件前提取信号文件的原始iq数据，它们是分开实现的
 % 本脚本用于加载第一阶段生成的.mat文件，分析原始I/Q数据是否存在溢出，
 % 并通过极坐标图（PPI 平面位置显示）进行可视化。
