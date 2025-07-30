@@ -1,6 +1,4 @@
-function k_value = fun_get_k_value(config, freInd, beam_pair_index)
 % FUN_GET_K_VALUE - 获取指定频点和波束对的测角鉴别器斜率(K值)
-%
 % 本函数作为雷达标定数据的接口。它在第一次被调用时会加载K值标定文件，
 % 之后根据输入的频点号和波束对编号，从中查找并返回对应的K值。
 %
@@ -16,8 +14,8 @@ function k_value = fun_get_k_value(config, freInd, beam_pair_index)
 %  date       by      version   modify
 %  25/07/12   XZR      v1.0      创建
 
-% --- 使用持久化变量(persistent)来缓存K值矩阵 ---
-% 这样可以避免每次调用函数都重复读取文件，提高效率。
+function k_value = fun_get_k_value(config, freInd, beam_pair_index)
+% --- 使用持久化变量(persistent)来缓存K值矩阵，这样可以避免每次调用函数都重复读取文件，提高效率 ---
 persistent K_Matrix;
 
 % --- 首次调用时，加载K值文件 ---
@@ -34,7 +32,6 @@ end
 
 % --- 查表获取K值 ---
 % 根据输入的频点号和波束对索引，在矩阵中查找对应的K值。
-% 注意：MATLAB的矩阵索引是从1开始的，所以需要对从0开始的频点号+1。
 try
     k_value = K_Matrix(freInd + 1, beam_pair_index);
 catch ME

@@ -1,4 +1,4 @@
-% FUN_PLOT_OVERFLOW_PPI_v3.m 对单帧I/Q数据进行可视化，并支持溢出点驻留显示
+% fun_plot_overflow_ppi_v3.m 对单帧I/Q数据进行可视化，并支持溢出点驻留显示
 %
 % v3更新：
 %   1. 接收一个包含所有历史溢出点信息的结构体数组 `overflow_log`。
@@ -27,11 +27,14 @@ amplitude_to_plot = amplitude(:, range_to_plot);
 
 %% 3. 极坐标图（PPI）可视化
 %ax = axes(h_fig);
+% 创建一个极坐标轴
 pax = polaraxes;
-pax.ThetaZeroLocation = 'top';
-pax.ThetaDir = 'clockwise';
-pax.ThetaLim = [-180 180];
-pax.RLim = [0 max(range_to_plot)];
+
+% --- 关键设置：确保0度在顶部，并使用0-360度范围 ---
+pax.ThetaZeroLocation = 'top';       % 将0度位置设置在图的正上方
+pax.ThetaDir = 'clockwise';          % 设置角度增长方向为顺时针
+pax.ThetaLim = [0 360];              % 【重要】使用[0 360]范围来避免标签显示冲突
+pax.RLim = [0 max(range_to_plot)];   % 设置距离轴范围
 
 % --- 绘制背景幅度图 ---
 [THETA_grid, RHO_grid] = meshgrid(angles_rad, ranges(range_to_plot));

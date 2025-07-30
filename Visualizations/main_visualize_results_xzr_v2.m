@@ -1,4 +1,4 @@
- % main_visualize_results_v2.m
+% main_visualize_results_v2.m
 %
 % 这是一个功能增强的可视化分析主控脚本。它负责加载处理好的MTD和CFAR结果，
 % 并根据用户的配置，以多种模式循环显示分析仪表盘。
@@ -97,11 +97,11 @@ for frame_idx = frame_range
             params.slice_to_plot = slice_to_analyze;
             
             mtd_to_plot = squeeze(load_mtd.MTD_win_all_beams{params.beam_to_plot}(params.slice_to_plot, :, :));
-            cfar_to_plot = squeeze(load_cfar.cfarFlag_win_all_beams{params.beam_to_plot}(params.slice_to_plot, :, :));
+            cfar_to_plot = squeeze(load_cfar.cfarFlag_win_all_beams{params.beam_to_plot}(:, :, params.slice_to_plot));
             
             % --- 修改点: 将h_fig作为参数传入 ---
-            fun_plot_cfar_dashboard_v2(h_fig, mtd_to_plot, cfar_to_plot, params);
-            
+            fun_plot_cfar_dashboard_v2(h_fig, mtd_to_plot,cfar_to_plot, params);
+             
         case 'all_slices_one_beam'
             % --- 进阶模式1：显示一个波束下的所有切片 ---
             params.beam_to_plot = beam_to_analyze;

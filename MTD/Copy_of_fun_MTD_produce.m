@@ -4,14 +4,12 @@
 % 依次执行脉冲压缩、FFT多普勒处理和杂波抑制，最终输出一个速度-距离二维矩阵。
 %
 % 输入参数:
-%   echoData - (prtNum x point_prt) 原始回波数据矩阵。
-%   params   - (struct) 包含雷达系统参数的结构体。
+%   echo - (prtNum x point_prt) 原始回波数据矩阵。
 %
 % 输出参数:
-%   MTD_Signal - (prtNum x point_prt_processed) 经过MTD处理后的速度-距离矩阵。
-%   pc_signal  - (prtNum x point_prt) 仅经过脉冲压缩处理后的数据。
+%   MTD_Signal - (prtNum x point_prt_processed) 经过MTD处理后的速度-距离矩阵。即 R-D 图
 
-function [MTD_Signal, pc_signal] = fun_MTD_produce(echoData, params)
+function MTD_Signal = fun_MTD_produce(echoData, params)
 %% 1.参数传递
 % 1.1 控制与调试开关
 %((abs(V)<1)||(R<5))如果速度太小或距离太近就不仿真了，当作背景杂波
@@ -90,11 +88,10 @@ pulse3 = exp(cj*2*pi*(f0*t3+0.5*K3*(t3.^2)));   % 长脉冲：正线性调频 700个点
 % 删除重复的区间
 % Echo_0=fun_lss_range_concate(prtNum,Echo_0);%(1536,868)
 
+
 % point_prt长度改变了
 [~,point_prt] = size(Echo_0);
 
-% 将脉冲压缩的结果赋值给新的输出变量
-pc_signal = Echo_0;
 
 %% 5.MTD (多普勒处理)
 [m,n] = size(Echo_0);
