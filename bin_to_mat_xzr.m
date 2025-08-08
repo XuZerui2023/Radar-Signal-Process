@@ -14,7 +14,7 @@ clc;clear; close all;
 
 % 在脚本开始时清除所有相关函数的持久化状态，确保每次运行都从头开始
 clear read_continuous_file_stream;  % 清除 read_continuous_file_stream 的持久化状态（持久性变量）
-clear frameDataRead_A_xzr_V2;       % 清除 frameDataRead_A_xzr_V2 的持久化状态（持久性变量）
+clear FrameDataRead_xzr;            % 清除 FrameDataRead_xzr 的持久化状态（持久性变量）
 clear manage_retry_count;           % 清除 manage_retry_count 的持久化状态（持久性变量）
 
 %% 从给定文本文件中读入DBF系数

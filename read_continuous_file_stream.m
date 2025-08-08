@@ -9,17 +9,17 @@
 %   read_data: 实际读取到的字节数据 (数据格式为 uint8 数据)。
 %   actual_read_len: 实际读取的字节数。
 %   is_end_of_stream: 逻辑值，如果无法再读取任何数据（文件已尽或错误），则为 true。
-%
+%   current_file_index: 当前操作的.bin文件的索引号。
 % 注意: 首次运行或需要重置文件读取状态时，请执行:
 %   clear read_continuous_file_stream;
 
 % 修改记录
 % date       by      version                            modify
 % 25/06/10   XZR      v1.0         实现跨文件处理的下层函数，被上层函数 FrameDataRead_xzr.m 调用
-
+% 25/07/03   XZR      v1.1         跟踪当前frame或prt所属的bin文件并返回文件索引号
 % 未来改进：
 
-function [read_data, actual_read_len, is_end_of_stream] = read_continuous_file_stream(expected_data_len, orgDataFilePath)
+function [read_data, actual_read_len, is_end_of_stream, current_file_index] = read_continuous_file_stream(expected_data_len, orgDataFilePath)
 
     % 持久化变量，模拟 C++ 类的成员变量
     persistent is_file_open_m;                % 当前是否有打开的文件
@@ -38,7 +38,8 @@ function [read_data, actual_read_len, is_end_of_stream] = read_continuous_file_s
         current_file_max_length_m = 0;
         current_file_index_m = 0; % 从文件索引 0 开始，会在第一次打开文件时递增到 1
     end
-
+    
+    current_file_index = current_file_index_m;  % 在函数开始时，就将当前文件索引赋值给输出变量
     actual_read_len = 0;      % 对应 C++ 中的 nRealRead_Len
     read_data = uint8([]);    % 初始化输出数据缓冲区为 uint8 类型（注意这里底层数据格式统一读取为uint8，然后在上层函数中根据需要再转换为特定的数据类型）
     is_end_of_stream = false; % 默认未到数据流末尾
@@ -46,6 +47,9 @@ function [read_data, actual_read_len, is_end_of_stream] = read_continuous_file_s
     % --- 1. 如果文件未打开，则尝试打开文件 ---
     if ~is_file_open_m
         current_file_index_m = current_file_index_m + 1; % 递增文件索引以获取下一个文件
+        
+        % --- 更新输出的索引号 ---
+        current_file_index = current_file_index_m;
         
         % 调用 DataFullPathGen 函数生成文件路径
         current_file_name = DataFullPathGen(orgDataFilePath, current_file_index_m);

@@ -14,7 +14,7 @@ clc;clear; close all;
 %% 1.主流程控制脚本参数设置
 n_exp = 2;         % 实验编号
 win_size = 4;      % 处理窗口的切片数量
-Total_Frames = 5; % 要处理的总帧数
+Total_Frames = 5;  % 要处理的总帧数
 
 
 %% 2.子函数参数设置
@@ -66,7 +66,7 @@ fileNames = {dirOutput.name};
 tic;
 % 循环处理每一帧，注意文件列表从1开始，而逻辑帧号frameRInd从0开始
 % 确保处理的帧数不超过文件总数减1（因为需要加载下一帧）
-frame_idx = 1; % 测试用
+% frame_idx = 1; % 测试用
 for frame_idx = 1:(min(Total_Frames, numel(fileNames) - 1))
     
     frameRInd = frame_idx - 1; % 当前处理的逻辑帧编号 (从0开始)
@@ -118,7 +118,7 @@ for frame_idx = 1:(min(Total_Frames, numel(fileNames) - 1))
 
         % 内层循环，将长窗口切片并进行MTD处理
         for i = 0:(win_size - 1)
-            
+           
             % 计算切片的起始和结束行索引
             start_row = round(i * prts_per_slice / win_size) + 1;
             end_row = start_row + prts_per_slice - 1;

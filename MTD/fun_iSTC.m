@@ -1,5 +1,5 @@
 %STCµ÷ÖÆ²¹³¥
-function [stc,eoch_iSTC]=fun_iSTC(echo)
+function [stc,eoch_iSTC] = fun_iSTC(echo)
 [m,n]=size(echo);
 eoch_iSTC=zeros(m,n);
 % stc_ini=textread('./UAVdataset/20220326/2/20220326_164800/stcCurve.txt','%f');%1025*1
